@@ -2,8 +2,18 @@
 <html lang="zh-TW" class="scroll-smooth">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>福岡八天七夜自駕遊行程</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>福岡八天七夜自駕遊</title>
+    
+    <!-- PWA Settings -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="福岡旅遊">
+    <meta name="theme-color" content="#2563eb">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/2060/2060250.png">
+    <!-- Inline Manifest for PWA -->
+    <link rel="manifest" href="data:application/manifest+json;base64,eyJuYW1lIjoi56aP5bKh5YWr5aSp5LiD5aSc6Ieq6ple6YGKIiwiMshort_nameIjoi56aP5bKh5peF6YGKIiwic3RhcnRfdXJsIjoiLiIsImRpc3BsYXkiOiJzdGFuZGFsb25lIiwiYmFja2dyb3VuZF9jb2xvciI6IiNmZmZmZmYiLCJ0aGVtZV9jb2xvciI6IiMyNTYzZWIiLCJpY29ucyI6W3sic3JjIjoiaHR0cHM6Ly9jZG4taWNvbnMtcG5nLmZsYXRpY29uLmNvbS81MTIvMjA2MC8yMDYwMjUwLnBuZyIsInNpemVzIjoiMTkyeDE5MiIsInR5cGUiOiJpbWFnZS9wbmcifV19">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         // Tailwind Dark Mode Configuration
@@ -21,7 +31,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
-        body { font-family: 'Noto Sans TC', sans-serif; }
+        body { font-family: 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; }
         .reservation-pulse { animation: pulse-red 2s infinite; }
         @keyframes pulse-red {
             0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
@@ -33,18 +43,18 @@
             text-decoration: underline;
             opacity: 0.8;
         }
-        /* Chat Widget Animations */
-        .chat-slide-in {
-            animation: slideIn 0.3s ease-out forwards;
+        /* Chat & Calc Widget Animations */
+        .slide-in-up {
+            animation: slideInUp 0.3s ease-out forwards;
         }
-        .chat-slide-out {
-            animation: slideOut 0.3s ease-in forwards;
+        .slide-out-down {
+            animation: slideOutDown 0.3s ease-in forwards;
         }
-        @keyframes slideIn {
+        @keyframes slideInUp {
             from { opacity: 0; transform: translateY(20px) scale(0.95); }
             to { opacity: 1; transform: translateY(0) scale(1); }
         }
-        @keyframes slideOut {
+        @keyframes slideOutDown {
             from { opacity: 1; transform: translateY(0) scale(1); }
             to { opacity: 0; transform: translateY(20px) scale(0.95); }
         }
@@ -75,7 +85,7 @@
         }
         /* Print styles */
         @media print {
-            #ai-assistant-btn, #ai-chat-modal, .nav-sticky, #theme-toggle {
+            #ai-assistant-btn, #currency-btn, #ai-chat-modal, #currency-modal, .nav-sticky, #theme-toggle {
                 display: none !important;
             }
             .container {
@@ -134,7 +144,7 @@
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto px-4 py-8 pb-24"> <!-- Added pb-24 for space for chat button -->
+    <div class="container mx-auto px-4 py-8 pb-32"> <!-- Increased padding for widgets -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="itinerary-content">
 
             <!-- Day 1 -->
@@ -697,6 +707,36 @@
         </div>
     </div>
 
+    <!-- Currency Converter Button -->
+    <button id="currency-btn" class="fixed bottom-24 right-6 w-12 h-12 bg-green-500 text-white rounded-full shadow-lg hover:shadow-2xl hover:scale-105 hover:bg-green-600 transition-all duration-300 flex items-center justify-center z-40">
+        <i class="fas fa-yen-sign text-xl"></i>
+    </button>
+
+    <!-- Currency Converter Modal -->
+    <div id="currency-modal" class="fixed bottom-40 right-6 w-[280px] bg-white dark:bg-slate-800 rounded-xl shadow-xl z-40 hidden p-4 border border-slate-100 dark:border-slate-700">
+        <div class="flex justify-between items-center mb-3">
+            <h4 class="font-bold text-slate-700 dark:text-slate-200 text-sm"><i class="fas fa-exchange-alt mr-2 text-green-500"></i>即時匯率換算</h4>
+            <button id="close-currency-btn" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"><i class="fas fa-times"></i></button>
+        </div>
+        <div class="space-y-3">
+            <div>
+                <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">日幣 (JPY)</label>
+                <input type="number" id="jpy-input" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-2 text-right font-mono text-lg focus:outline-none focus:border-green-500 dark:text-white" placeholder="0">
+            </div>
+            <div class="flex justify-center -my-2 relative z-10">
+                <div class="bg-slate-100 dark:bg-slate-600 rounded-full p-1 text-xs text-slate-400"><i class="fas fa-arrow-down"></i></div>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500 dark:text-slate-400 mb-1">台幣 (TWD)</label>
+                <input type="number" id="twd-input" class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded p-2 text-right font-mono text-lg focus:outline-none focus:border-green-500 dark:text-white" placeholder="0">
+            </div>
+            <div class="text-[10px] text-right text-slate-400 dark:text-slate-500 mt-1 flex justify-between items-center">
+                <span id="rate-display">匯率載入中...</span>
+                <button id="refresh-rate-btn" class="hover:text-green-500 transition-colors"><i class="fas fa-sync-alt"></i></button>
+            </div>
+        </div>
+    </div>
+
     <!-- AI Assistant Floating Button -->
     <button id="ai-assistant-btn" class="fixed bottom-6 right-6 w-14 h-14 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-lg hover:shadow-2xl hover:scale-105 transition-all duration-300 flex items-center justify-center z-50 group">
         <i class="fas fa-robot text-2xl group-hover:rotate-12 transition-transform"></i>
@@ -803,7 +843,7 @@
         // --- Configuration ---
         // 📝 在下方引號內填入您的 Google Gemini API Key，即可免去手動設定的步驟
         // 例如: const envApiKey = "AIzaSy..."; 
-        const envApiKey = ""; 
+        const envApiKey = "AIzaSyB24wvTeUm6Oimv3cGWGqGLiXbotwAOKj4"; 
 
         const assistantBtn = document.getElementById('ai-assistant-btn');
         const chatModal = document.getElementById('ai-chat-modal');
@@ -821,7 +861,76 @@
         const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
         const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
         
+        // Currency Widgets
+        const currencyBtn = document.getElementById('currency-btn');
+        const currencyModal = document.getElementById('currency-modal');
+        const closeCurrencyBtn = document.getElementById('close-currency-btn');
+        const jpyInput = document.getElementById('jpy-input');
+        const twdInput = document.getElementById('twd-input');
+        const rateDisplay = document.getElementById('rate-display');
+        const refreshRateBtn = document.getElementById('refresh-rate-btn');
+
         let weatherContextData = "Weather data loading...";
+        let currentRate = 0.22; // Default fallback rate
+
+        // --- Currency Converter Logic ---
+        function toggleCurrencyModal() {
+            if (currencyModal.classList.contains('hidden')) {
+                currencyModal.classList.remove('hidden');
+                currencyModal.classList.remove('slide-out-down');
+                currencyModal.classList.add('slide-in-up');
+                fetchExchangeRate(); // Refresh rate on open
+            } else {
+                currencyModal.classList.remove('slide-in-up');
+                currencyModal.classList.add('slide-out-down');
+                setTimeout(() => currencyModal.classList.add('hidden'), 300);
+            }
+        }
+
+        async function fetchExchangeRate() {
+            rateDisplay.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 更新中...';
+            try {
+                // Using generic public API - might be rate limited but good for simple use
+                const response = await fetch('https://api.exchangerate-api.com/v4/latest/JPY');
+                const data = await response.json();
+                if (data && data.rates && data.rates.TWD) {
+                    currentRate = data.rates.TWD;
+                    rateDisplay.innerText = `1 JPY = ${currentRate.toFixed(4)} TWD`;
+                    // Recalculate if there is a value
+                    if (jpyInput.value) {
+                        twdInput.value = (jpyInput.value * currentRate).toFixed(0);
+                    }
+                } else {
+                    throw new Error("No TWD rate found");
+                }
+            } catch (error) {
+                console.error("Rate fetch failed", error);
+                rateDisplay.innerText = `預設匯率: ${currentRate} (更新失敗)`;
+            }
+        }
+
+        currencyBtn.addEventListener('click', toggleCurrencyModal);
+        closeCurrencyBtn.addEventListener('click', toggleCurrencyModal);
+        refreshRateBtn.addEventListener('click', fetchExchangeRate);
+
+        jpyInput.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+                twdInput.value = (val * currentRate).toFixed(0);
+            } else {
+                twdInput.value = '';
+            }
+        });
+
+        twdInput.addEventListener('input', (e) => {
+            const val = parseFloat(e.target.value);
+            if (!isNaN(val)) {
+                jpyInput.value = (val / currentRate).toFixed(0);
+            } else {
+                jpyInput.value = '';
+            }
+        });
+
 
         // --- Theme Toggle Logic ---
         function updateThemeIcon() {
@@ -1186,5 +1295,4 @@
 
     </script>
 </body>
-
 </html>
